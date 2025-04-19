@@ -14,7 +14,6 @@ class HomeScreen extends StatefulWidget {
     required this.onThemeChange,
     required this.onLogout,
   }) : super(key: key);
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }

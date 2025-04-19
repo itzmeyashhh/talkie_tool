@@ -11,53 +11,83 @@ class ChatInputBar extends StatefulWidget {
 
 class _ChatInputBarState extends State<ChatInputBar> {
   final TextEditingController _controller = TextEditingController();
+  bool _canSend = false;
 
   void _handleSend() {
     final text = _controller.text.trim();
     if (text.isNotEmpty) {
       widget.onSend(text);
       _controller.clear();
+      setState(() => _canSend = false);
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      setState(() => _canSend = _controller.text.trim().isNotEmpty);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           children: [
-            // Text input
             Expanded(
               child: TextField(
                 controller: _controller,
                 minLines: 1,
                 maxLines: 4,
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => _handleSend(),
                 decoration: InputDecoration(
-                  hintText: "Type your message...",
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  hintText: "Ask something or start a conversation...",
+                  filled: true,
+                  fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                  contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            // Send button
             CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              radius: 24,
+              backgroundColor: _canSend
+                  ? theme.colorScheme.primary
+                  : Colors.grey.shade400,
               child: IconButton(
-                icon: const Icon(Icons.send, color: Colors.white),
-                onPressed: _handleSend,
+                icon: Icon(Icons.send,
+                    color: _canSend ? Colors.white : Colors.black26),
+                onPressed: _canSend ? _handleSend : null,
+                tooltip: "Send",
               ),
             ),
             const SizedBox(width: 6),
-            // Voice button (disabled for now)
             CircleAvatar(
-              backgroundColor: Colors.grey.shade300,
+              radius: 24,
+              backgroundColor: Colors.grey.shade200,
               child: IconButton(
                 icon: const Icon(Icons.mic, color: Colors.black54),
-                onPressed: null, // Placeholder
+                onPressed: () {
+                  // TODO: Add voice functionality later
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Voice input coming soon!"),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                },
+                tooltip: "Voice Input",
               ),
             ),
           ],
